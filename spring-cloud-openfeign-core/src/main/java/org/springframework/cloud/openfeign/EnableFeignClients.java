@@ -25,11 +25,13 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * Scans for interfaces that declare they are feign clients (via
- * {@link org.springframework.cloud.openfeign.FeignClient} <code>@FeignClient</code>).
- * Configures component scanning directives for use with
- * {@link org.springframework.context.annotation.Configuration}
- * <code>@Configuration</code> classes.
+ * 扫描声明它们是Feign客户端的接口
+ * (通过{@link org.springframework.cloud.openfeign.FeignClient} <code>@FeignClient</code>).
+ * 配置组件扫描指令以与{@link org.springframework.context.annotation.Configuration}<code>@Configuration</code>类一起使用.
+ * <p>
+ * 在配置类上添加这个注解以后,实际上产生作用的是导入的{@link FeignClientsRegistrar}类.
+ * 所以:
+ * @see FeignClientsRegistrar
  *
  * @author Spencer Gibb
  * @author Dave Syer
@@ -45,6 +47,7 @@ public @interface EnableFeignClients {
 	 * Alias for the {@link #basePackages()} attribute. Allows for more concise annotation
 	 * declarations e.g.: {@code @ComponentScan("org.my.pkg")} instead of
 	 * {@code @ComponentScan(basePackages="org.my.pkg")}.
+	 *
 	 * @return the array of 'basePackages'.
 	 */
 	String[] value() default {};
@@ -56,6 +59,7 @@ public @interface EnableFeignClients {
 	 * <p>
 	 * Use {@link #basePackageClasses()} for a type-safe alternative to String-based
 	 * package names.
+	 *
 	 * @return the array of 'basePackages'.
 	 */
 	String[] basePackages() default {};
@@ -66,6 +70,7 @@ public @interface EnableFeignClients {
 	 * <p>
 	 * Consider creating a special no-op marker class or interface in each package that
 	 * serves no purpose other than being referenced by this attribute.
+	 *
 	 * @return the array of 'basePackageClasses'.
 	 */
 	Class<?>[] basePackageClasses() default {};
@@ -75,14 +80,13 @@ public @interface EnableFeignClients {
 	 * <code>@Bean</code> definition for the pieces that make up the client, for instance
 	 * {@link feign.codec.Decoder}, {@link feign.codec.Encoder}, {@link feign.Contract}.
 	 *
-	 * @see FeignClientsConfiguration for the defaults
 	 * @return list of default configurations
+	 * @see FeignClientsConfiguration for the defaults
 	 */
 	Class<?>[] defaultConfiguration() default {};
 
 	/**
-	 * List of classes annotated with @FeignClient. If not empty, disables classpath
-	 * scanning.
+	 * 使用@FeignClient进行注解的类列表.如果不是空的,则禁用类路径扫描.
 	 * @return list of FeignClient classes
 	 */
 	Class<?>[] clients() default {};

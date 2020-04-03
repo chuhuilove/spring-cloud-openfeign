@@ -19,9 +19,19 @@ package org.springframework.cloud.openfeign;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.cloud.context.named.NamedContextFactory;
+import org.springframework.core.type.AnnotationMetadata;
 
 /**
+ * 看起来,这个类就是一个Holder类,
+ * 持有添加了{@link EnableFeignClients}注解的那个类的全类名
+ * 和{@link EnableFeignClients}的defaultConfiguration属性值.
+ * 在{@link FeignClientsRegistrar#registerBeanDefinitions(AnnotationMetadata, BeanDefinitionRegistry)}
+ * 函数中进行注册.
+ * //todo 这个类没有上面说的那么简单,还需要进一步查看
+ *
+ *
  * @author Dave Syer
  * @author Gregor Zurowski
  */
@@ -39,6 +49,7 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 		this.configuration = configuration;
 	}
 
+	@Override
 	public String getName() {
 		return this.name;
 	}
@@ -47,6 +58,7 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 		this.name = name;
 	}
 
+	@Override
 	public Class<?>[] getConfiguration() {
 		return this.configuration;
 	}
@@ -65,7 +77,7 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 		}
 		FeignClientSpecification that = (FeignClientSpecification) o;
 		return Objects.equals(this.name, that.name)
-				&& Arrays.equals(this.configuration, that.configuration);
+			&& Arrays.equals(this.configuration, that.configuration);
 	}
 
 	@Override
@@ -76,8 +88,8 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 	@Override
 	public String toString() {
 		return new StringBuilder("FeignClientSpecification{").append("name='")
-				.append(this.name).append("', ").append("configuration=")
-				.append(Arrays.toString(this.configuration)).append("}").toString();
+			.append(this.name).append("', ").append("configuration=")
+			.append(Arrays.toString(this.configuration)).append("}").toString();
 	}
 
 }
