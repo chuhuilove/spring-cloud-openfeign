@@ -29,6 +29,9 @@ import org.springframework.core.type.AnnotationMetadata;
  * 和{@link EnableFeignClients}的defaultConfiguration属性值.
  * 在{@link FeignClientsRegistrar#registerBeanDefinitions(AnnotationMetadata, BeanDefinitionRegistry)}
  * 函数中进行注册.
+ *
+ * 除上面所说,还持有添加了{@link EnableFeignClients}注解的那个类的全类名
+ *
  * //todo 这个类没有上面说的那么简单,还需要进一步查看
  *
  *

@@ -20,6 +20,8 @@ import feign.Feign;
 import feign.Target;
 
 /**
+ * 顾名思义,这是注入到Spring Ioc容器中真正的类,
+ * 也就是添加了@FeignClient注解的那个接口的实现类的一个代理.
  * @author Spencer Gibb
  */
 interface Targeter {

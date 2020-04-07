@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import feign.ReflectiveFeign;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -251,6 +253,19 @@ class FeignClientsRegistrar
 				if (candidateComponent instanceof AnnotatedBeanDefinition) {
 					// 验证,带有@FeignClient注解的类,是接口,而不是其他形式的类型
 					// fixme 注意,这里有一个连环炮,为什么一定要接口呢?
+					/**
+					 * 2020年4月7日11:03:00
+					 * 这里解释一下,为什么一定要使用接口呢?抽象类不行吗?
+					 * {@link ReflectiveFeign#newInstance(feign.Target)}函数是创建接口的实例的地方,
+					 * 在这个里面,调用了 <pre>{@code
+					 *  InvocationHandler handler = factory.create(target, methodToHandler);
+					 *  T proxy = (T) Proxy.newProxyInstance(target.type().getClassLoader(),
+					 *         new Class<?>[] {target.type()}, handler);
+					 *  //其他事情.......
+					 *  return proxy;
+					 * }</pre>
+					 * 换句话说,生成代理对象的技术是JDK动态代理...而不是采用的,类似cglib之类的东西.
+					 */
 					AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
 					AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
 					Assert.isTrue(annotationMetadata.isInterface(),
@@ -283,15 +298,43 @@ class FeignClientsRegistrar
 	 * 将被@FeignClient注解的类,注册到BeanFactory中
 	 * @param registry  注册BeanDefinition的借口
 	 * @param annotationMetadata 被@FeignClient注册过的类的元数据
-	 * @param attributes 从@FeignClient提取出来的属性
+	 * @param attributes 从@FeignClient提取出来的属性,map
 	 */
 	private void registerFeignClient(BeanDefinitionRegistry registry,
 									 AnnotationMetadata annotationMetadata, Map<String, Object> attributes) {
+		/**
+		 *  先假设一下,添加@FeignClient注解的类名叫做AddFeignClass,
+		 *  现在来分析一下,是如何将AddFeignClass添加到容器中的.
+		 *
+		 *  首先,如果我们直接调用{@code BeanDefinitionBuilder.genericBeanDefinition(AddFeignClass.class)},
+		 *  这么做是否合适?
+		 *
+		 *  答案是,不合适.为什么呢?
+		 *  只因为,AddFeignClass是一个接口,虽然将其转换成一个{@link BeanDefinition},是允许的.
+		 *  但是在容器里面的,必须是AddFeignClass的一个实例化对象.
+		 *  并且,在扫描阶段,spring-framework会直接过滤掉直接添加了@Service注解的接口.
+		 *
+		 *
+		 *  根据FactoryBean的特性,只有在{@link FactoryBean#getObject()} 的时候,返回的才是真正的实例.
+		 *  所以,在外部调用{@link FactoryBean#getObject()}的时候,就可以在{@link FactoryBean#getObject()}
+		 *  内部做很多文章,比如,给AddFeignClass接口动态生成一个实例对象.
+		 *
+		 *  所以,这里将{@link FeignClientFactoryBean}转化为BeanDefinition.
+		 *
+		 *  不要去从参数数量的角度去考虑这个问题,
+		 *  因为{@code BeanDefinitionBuilder.addConstructorArgValue}
+		 *  和{@code BeanDefinitionBuilder.addConstructorArgReference}
+		 *  可以无限制的添加参数.
+		 *
+		 */
+
 		String className = annotationMetadata.getClassName();
 
+		// 使用FeignClientFactoryBean来创建一个BeanDefinition
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder
 			.genericBeanDefinition(FeignClientFactoryBean.class);
 		validate(attributes);
+
 
 		definition.addPropertyValue("url", getUrl(attributes));
 		definition.addPropertyValue("path", getPath(attributes));
@@ -303,6 +346,7 @@ class FeignClientsRegistrar
 		definition.addPropertyValue("decode404", attributes.get("decode404"));
 		definition.addPropertyValue("fallback", attributes.get("fallback"));
 		definition.addPropertyValue("fallbackFactory", attributes.get("fallbackFactory"));
+		// 注入模式,设置为按类型注入
 		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
 
 		String alias = contextId + "FeignClient";

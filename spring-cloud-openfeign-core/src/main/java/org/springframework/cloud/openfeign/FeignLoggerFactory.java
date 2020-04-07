@@ -20,6 +20,9 @@ import feign.Logger;
 
 /**
  * Allows an application to use a custom Feign {@link Logger}.
+ * 允许应用程序来使用Feign {@link Logger}.
+ * 日志这个东西,真的需要好好研究一下下.
+ * 下一步,需要把netflix的源码全部搞下来...
  *
  * @author Venil Noronha
  */

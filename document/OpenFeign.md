@@ -70,6 +70,32 @@ public interface StoreClient {
 
 ## 1.10 Feign @QueryMap support
 
+OpenFeign @QueryMap注解支持将POJO用作GET参数映射.不幸的是,默认的OpenFeign QueryMap注解与Spring不兼容,因为它缺少`value`属性.
+Spring Cloud OpenFeign提供了一个等价的`@SpringQueryMap`注解,用于将POJO或Map参数注解为查询参数映射.
+
+例如,Params类定义两个属性`param1`和`param2`:
+
+```java
+// Params.java
+public class Params {
+    private String param1;
+    private String param2;
+
+    // [Getters and setters omitted for brevity]
+}
+```
+
+以下Feign客户端通过使用`@SpringQueryMap`注解来使用`Params`类：
+
+```java
+@FeignClient("demo")
+public class DemoTemplate {
+
+    @GetMapping(path = "/demo")
+    String demoEndpoint(@SpringQueryMap Params params);
+}
+```
+
 ## 1.11 Troubleshooting
 
 ### 1.11.1 Early Initialization Errors
