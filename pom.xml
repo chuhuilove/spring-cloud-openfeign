@@ -26,7 +26,7 @@
 	<properties>
 		<main.basedir>${basedir}</main.basedir>
 		<jackson.version>2.7.3</jackson.version>
-		<spring-cloud-commons.version>2.1.5.RELEASE</spring-cloud-commons.version>
+		<spring-cloud-commons.version>2.1.5.RELEASE-cyzi</spring-cloud-commons.version>
 		<spring-cloud-netflix.version>2.1.5.RELEASE-cyzi</spring-cloud-netflix.version>
 
 		<!-- Plugin versions -->
