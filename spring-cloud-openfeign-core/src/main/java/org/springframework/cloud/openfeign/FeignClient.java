@@ -25,11 +25,9 @@ import java.lang.annotation.Target;
 import org.springframework.core.annotation.AliasFor;
 
 /**
- * Annotation for interfaces declaring that a REST client with that interface should be
- * created (e.g. for autowiring into another component). If ribbon is available it will be
- * used to load balance the backend requests, and the load balancer can be configured
- * using a <code>@RibbonClient</code> with the same name (i.e. value) as the feign client.
- *
+ * 接口的注解,声明应该创建具有该接口的REST客户端(例如,将其自动装配到另一个组件中).
+ * 如果ribbon可用,它将用于后端请求的负载平衡,负载平衡器可以使用<code>@RibbonClient</code>,
+ * name(即value)与feign客户端相同.
  * @author Spencer Gibb
  * @author Venil Noronha
  */
