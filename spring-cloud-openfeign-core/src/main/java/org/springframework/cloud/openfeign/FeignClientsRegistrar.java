@@ -508,8 +508,8 @@ class FeignClientsRegistrar
 
 	private void registerClientConfiguration(BeanDefinitionRegistry registry, Object name,
 											 Object configuration) {
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder
-			.genericBeanDefinition(FeignClientSpecification.class);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(FeignClientSpecification.class);
+
 		builder.addConstructorArgValue(name);
 		builder.addConstructorArgValue(configuration);
 		/**

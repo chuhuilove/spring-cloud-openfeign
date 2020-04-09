@@ -24,6 +24,8 @@ import org.springframework.cloud.context.named.NamedContextFactory;
  * <p>
  * 创建feign类实例的工厂.
  * 它为每个客户端名称创建一个Spring ApplicationContext,并从中提取所需的bean.
+ * <p>
+ * 这个类在{@link FeignAutoConfiguration#feignContext()}中,被注册到BeanFactory中.
  *
  * @author Spencer Gibb
  * @author Dave Syer

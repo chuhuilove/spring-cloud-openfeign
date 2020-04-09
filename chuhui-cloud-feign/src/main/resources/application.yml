@@ -1,0 +1,4 @@
+server:
+  servlet:
+    context-path: /feign
+  port: 8081

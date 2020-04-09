@@ -32,6 +32,8 @@ import feign.codec.ErrorDecoder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
+ * Feign客户端属性配置类,
+ *
  * @author Eko Kurniawan Khannedy
  */
 @ConfigurationProperties("feign.client")

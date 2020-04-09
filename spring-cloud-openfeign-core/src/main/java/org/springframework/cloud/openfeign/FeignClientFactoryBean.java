@@ -55,6 +55,9 @@ import org.springframework.util.StringUtils;
  */
 class FeignClientFactoryBean
 	implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
+	public FeignClientFactoryBean(){
+		System.err.println("has init FeignClientFactoryBean");
+	}
 
 	/***********************************
 	 * 警告!这个类中没有任何东西属性应该添加@Autowired的.它会因为一些生命周期竞争条件而导致NPE.
@@ -286,6 +289,14 @@ class FeignClientFactoryBean
 		return context.getInstance(this.contextId, type);
 	}
 
+	/**
+	 * 设置负载均衡
+	 * @param builder
+	 * @param context
+	 * @param target
+	 * @param <T>
+	 * @return
+	 */
 	protected <T> T loadBalance(Feign.Builder builder, FeignContext context,
 								HardCodedTarget<T> target) {
 		Client client = getOptional(context, Client.class);
