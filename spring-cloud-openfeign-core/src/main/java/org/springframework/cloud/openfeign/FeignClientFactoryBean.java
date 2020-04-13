@@ -143,6 +143,11 @@ class FeignClientFactoryBean
 	}
 
 
+	/**
+	 * 获取Feign.Builder对象
+	 * @param context
+	 * @return
+	 */
 	protected Feign.Builder feign(FeignContext context) {
 		FeignLoggerFactory loggerFactory = get(context, FeignLoggerFactory.class);
 		Logger logger = loggerFactory.create(this.type);
@@ -151,7 +156,9 @@ class FeignClientFactoryBean
 		Feign.Builder builder = get(context, Feign.Builder.class)
 			// required values
 			.logger(logger)
+			// 设置编码器
 			.encoder(get(context, Encoder.class))
+			// 设置解码器
 			.decoder(get(context, Decoder.class))
 			.contract(get(context, Contract.class));
 		// @formatter:on
@@ -162,8 +169,11 @@ class FeignClientFactoryBean
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
+		// 获取用户配置的feign客户端属性
+		// 也就是在feign.client中配置的值
 		FeignClientProperties properties = this.applicationContext
 			.getBean(FeignClientProperties.class);
+
 		if (properties != null) {
 			if (properties.isDefaultToProperties()) {
 				configureUsingConfiguration(context, builder);
