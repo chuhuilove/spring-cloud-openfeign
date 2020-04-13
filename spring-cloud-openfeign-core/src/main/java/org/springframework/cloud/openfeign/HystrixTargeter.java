@@ -25,6 +25,7 @@ import feign.hystrix.SetterFactory;
 import org.springframework.util.StringUtils;
 
 /**
+ * 创建一个hystrix目标
  * @author Spencer Gibb
  * @author Erik Kringen
  */

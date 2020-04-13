@@ -69,11 +69,18 @@ public class FeignClientsConfiguration {
 	@Autowired(required = false)
 	private Logger logger;
 
+	/**
+	 * 设置一个解码器,根据添加的@ConditionalOnMissingBean注解,
+	 * 如果在BeanFactory中没有找到{@code Decoder} bean,
+	 * 则将此{@code Decoder} bean,添加到BeanFactory中.
+	 *
+	 * @return 返回一个解码器
+	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder() {
 		return new OptionalDecoder(
-				new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
+			new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
 	}
 
 	@Bean
@@ -131,7 +138,7 @@ public class FeignClientsConfiguration {
 	}
 
 	@Configuration
-	@ConditionalOnClass({ HystrixCommand.class, HystrixFeign.class })
+	@ConditionalOnClass({HystrixCommand.class, HystrixFeign.class})
 	protected static class HystrixFeignConfiguration {
 
 		@Bean
