@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
@@ -49,6 +51,7 @@ import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.type.AnnotationMetadata;
 
 /**
  * @author Spencer Gibb
@@ -56,8 +59,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnClass(Feign.class)
-@EnableConfigurationProperties({ FeignClientProperties.class,
-		FeignHttpClientProperties.class })
+@EnableConfigurationProperties({FeignClientProperties.class,
+	FeignHttpClientProperties.class})
 public class FeignAutoConfiguration {
 
 	@Autowired(required = false)
@@ -68,8 +71,44 @@ public class FeignAutoConfiguration {
 		return HasFeatures.namedFeature("Feign", Feign.class);
 	}
 
+	/**
+	 * 将{@code FeignContext}注入到容器中.
+	 * 以供后续使用.
+	 *
+	 * @return
+	 */
 	@Bean
 	public FeignContext feignContext() {
+		/**
+		 * <dt>FeignContext存在的意义是什么呢?为什么要将其注入到容器中.</dt>
+		 * 在{@link #feignContext()}函数中,调用了{@link FeignContext#setConfigurations(List)}.
+		 * 这一点就比较值得玩味了.
+		 * 再来看,其实际上传入的是{@linkplain configurations}.而{@linkplain configurations}上面
+		 * 还添加了一个{@code @Autowired}注解.由此说明,{@linkplain configurations}里面的值是由容器注入的.
+		 * 那么问题来了,容器中的{@code FeignClientSpecification}类型的Bean,是从哪里来的呢?
+		 * 还记得,在阅读{@link FeignClientsRegistrar}源码的时候.{@link FeignClientsRegistrar#registerBeanDefinitions(AnnotationMetadata, BeanDefinitionRegistry)}
+		 * 里面的两个函数调用:
+		 * {@link FeignClientsRegistrar#registerDefaultConfiguration(AnnotationMetadata, BeanDefinitionRegistry) }和
+		 * {@link FeignClientsRegistrar#registerFeignClients(AnnotationMetadata, BeanDefinitionRegistry)} .
+		 * 这两者都有一个共同点,最终都是调用{@link FeignClientsRegistrar#registerClientConfiguration(BeanDefinitionRegistry, Object, Object)}
+		 * 函数,来生成一个{@code FeignClientSpecification}类型的{@code BeanDefinition},并将其添加进BeanFactory中.
+		 *
+		 * 在前者,解析的是添加了{@code @EnableFeignClients}的类,将添加了此注解的类名获取到之后,
+		 * 然后在通过组装,组装成default.xxx.FeignClientSpecification的形式,再获取到该类上{@code @EnableFeignClients}注解上的{@code defaultConfiguration}
+		 * 属性,将这两个参数作为构造函数值,设置到生成的{@code BeanDefinition}中.
+		 *
+		 * 后者,解析的添加了{@code FeignClient}注解的类,获取{@code FeignClient}注解的{@link FeignClientsRegistrar#getClientName(Map)}属性,
+		 * 同样是通过组装,组装成xxxx.FeignClientSpecification的形式,再获取到该类上{@code @FeignClient}注解上的{@code configuration}
+		 * 属性,将这两个参数作为构造函数的值,设置到生成的{@code BeanDefinition}中.
+		 *
+		 * 以上,就是{@linkplain configurations}中值的由来.
+		 *
+		 *
+		 *
+		 *
+		 *
+		 *
+		 */
 		FeignContext context = new FeignContext();
 		context.setConfigurations(this.configurations);
 		return context;
@@ -111,7 +150,7 @@ public class FeignAutoConfiguration {
 	protected static class HttpClientFeignConfiguration {
 
 		private final Timer connectionManagerTimer = new Timer(
-				"FeignApacheHttpClientConfiguration.connectionManagerTimer", true);
+			"FeignApacheHttpClientConfiguration.connectionManagerTimer", true);
 
 		@Autowired(required = false)
 		private RegistryBuilder registryBuilder;
@@ -121,15 +160,15 @@ public class FeignAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean(HttpClientConnectionManager.class)
 		public HttpClientConnectionManager connectionManager(
-				ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
-				FeignHttpClientProperties httpClientProperties) {
+			ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
+			FeignHttpClientProperties httpClientProperties) {
 			final HttpClientConnectionManager connectionManager = connectionManagerFactory
-					.newConnectionManager(httpClientProperties.isDisableSslValidation(),
-							httpClientProperties.getMaxConnections(),
-							httpClientProperties.getMaxConnectionsPerRoute(),
-							httpClientProperties.getTimeToLive(),
-							httpClientProperties.getTimeToLiveUnit(),
-							this.registryBuilder);
+				.newConnectionManager(httpClientProperties.isDisableSslValidation(),
+					httpClientProperties.getMaxConnections(),
+					httpClientProperties.getMaxConnectionsPerRoute(),
+					httpClientProperties.getTimeToLive(),
+					httpClientProperties.getTimeToLiveUnit(),
+					this.registryBuilder);
 			this.connectionManagerTimer.schedule(new TimerTask() {
 				@Override
 				public void run() {
@@ -141,15 +180,15 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		public CloseableHttpClient httpClient(ApacheHttpClientFactory httpClientFactory,
-				HttpClientConnectionManager httpClientConnectionManager,
-				FeignHttpClientProperties httpClientProperties) {
+											  HttpClientConnectionManager httpClientConnectionManager,
+											  FeignHttpClientProperties httpClientProperties) {
 			RequestConfig defaultRequestConfig = RequestConfig.custom()
-					.setConnectTimeout(httpClientProperties.getConnectionTimeout())
-					.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
-					.build();
+				.setConnectTimeout(httpClientProperties.getConnectionTimeout())
+				.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
+				.build();
 			this.httpClient = httpClientFactory.createBuilder()
-					.setConnectionManager(httpClientConnectionManager)
-					.setDefaultRequestConfig(defaultRequestConfig).build();
+				.setConnectionManager(httpClientConnectionManager)
+				.setDefaultRequestConfig(defaultRequestConfig).build();
 			return this.httpClient;
 		}
 
@@ -181,8 +220,8 @@ public class FeignAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean(ConnectionPool.class)
 		public ConnectionPool httpClientConnectionPool(
-				FeignHttpClientProperties httpClientProperties,
-				OkHttpClientConnectionPoolFactory connectionPoolFactory) {
+			FeignHttpClientProperties httpClientProperties,
+			OkHttpClientConnectionPoolFactory connectionPoolFactory) {
 			Integer maxTotalConnections = httpClientProperties.getMaxConnections();
 			Long timeToLive = httpClientProperties.getTimeToLive();
 			TimeUnit ttlUnit = httpClientProperties.getTimeToLiveUnit();
@@ -191,15 +230,15 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		public okhttp3.OkHttpClient client(OkHttpClientFactory httpClientFactory,
-				ConnectionPool connectionPool,
-				FeignHttpClientProperties httpClientProperties) {
+										   ConnectionPool connectionPool,
+										   FeignHttpClientProperties httpClientProperties) {
 			Boolean followRedirects = httpClientProperties.isFollowRedirects();
 			Integer connectTimeout = httpClientProperties.getConnectionTimeout();
 			Boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
 			this.okHttpClient = httpClientFactory.createBuilder(disableSslValidation)
-					.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-					.followRedirects(followRedirects).connectionPool(connectionPool)
-					.build();
+				.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+				.followRedirects(followRedirects).connectionPool(connectionPool)
+				.build();
 			return this.okHttpClient;
 		}
 

@@ -72,7 +72,26 @@ class FeignClientsRegistrar
 
 	FeignClientsRegistrar() {
 	}
-
+	@Override
+	public void registerBeanDefinitions(AnnotationMetadata metadata,
+										BeanDefinitionRegistry registry) {
+		/**
+		 * 提取出{@link EnableFeignClients}注解的defaultConfiguration属性,
+		 * 和添加了{@link EnableFeignClients}注解的类的全类名,
+		 * 将这个两个参数作为{@link FeignClientSpecification}的构造参数,
+		 * 然后将{@link FeignClientSpecification}转化为BeanDefinition,注册到BeanFactory中.
+		 * 这里,为什么要将{@link FeignClientSpecification}注册到BeanFactory中?
+		 * {@link FeignClientSpecification}有什么特殊的意义存在吗?
+		 * 所以,就需要根据其中的代码,来进行判断了.
+		 * 直接去看{@link FeignClientSpecification}的源码吧.
+		 * @see FeignClientSpecification
+		 */
+		registerDefaultConfiguration(metadata, registry);
+		/**
+		 *
+		 */
+		registerFeignClients(metadata, registry);
+	}
 	static void validateFallback(final Class clazz) {
 		Assert.isTrue(!clazz.isInterface(),
 			"Fallback class must implement the interface annotated by @FeignClient");
@@ -136,26 +155,7 @@ class FeignClientsRegistrar
 		this.resourceLoader = resourceLoader;
 	}
 
-	@Override
-	public void registerBeanDefinitions(AnnotationMetadata metadata,
-										BeanDefinitionRegistry registry) {
-		/**
-		 * 提取出{@link EnableFeignClients}注解的defaultConfiguration属性,
-		 * 和添加了{@link EnableFeignClients}注解的类的全类名,
-		 * 将这个两个参数作为{@link FeignClientSpecification}的构造参数,
-		 * 然后将{@link FeignClientSpecification}转化为BeanDefinition,注册到BeanFactory中.
-		 * 这里,为什么要将{@link FeignClientSpecification}注册到BeanFactory中?
-		 * {@link FeignClientSpecification}有什么特殊的意义存在吗?
-		 * 所以,就需要根据其中的代码,来进行判断了.
-		 * 直接去看{@link FeignClientSpecification}的源码吧.
-		 * @see FeignClientSpecification
-		 */
-		registerDefaultConfiguration(metadata, registry);
-		/**
-		 *
-		 */
-		registerFeignClients(metadata, registry);
-	}
+
 
 	private void registerDefaultConfiguration(AnnotationMetadata metadata,
 											  BeanDefinitionRegistry registry) {
