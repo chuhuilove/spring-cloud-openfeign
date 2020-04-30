@@ -63,6 +63,8 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.addTemplate
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
 
 /**
+ * 代码写的真鸡儿精彩
+ *
  * @author Spencer Gibb
  * @author Abhijit Sarkar
  * @author Halvdan Hoem Grelland
@@ -163,6 +165,12 @@ public class SpringMvcContract extends Contract.BaseContract
 		this.resourceLoader = resourceLoader;
 	}
 
+	/**
+	 * 用来解析接口内的带有{@code @RequestMapping}注解的方法
+	 * 1. BaseContract.parseAndValidateMetadata() 会先调用这个方法
+	 * @param data
+	 * @param clz
+	 */
 	@Override
 	protected void processAnnotationOnClass(MethodMetadata data, Class<?> clz) {
 		if (clz.getInterfaces().length == 0) {
@@ -182,36 +190,17 @@ public class SpringMvcContract extends Contract.BaseContract
 		}
 	}
 
-	@Override
-	public MethodMetadata parseAndValidateMetadata(Class<?> targetType, Method method) {
-		this.processedMethods.put(Feign.configKey(targetType, method), method);
-		MethodMetadata md = super.parseAndValidateMetadata(targetType, method);
-
-		RequestMapping classAnnotation = findMergedAnnotation(targetType,
-				RequestMapping.class);
-		if (classAnnotation != null) {
-			// produces - use from class annotation only if method has not specified this
-			if (!md.template().headers().containsKey(ACCEPT)) {
-				parseProduces(md, method, classAnnotation);
-			}
-
-			// consumes -- use from class annotation only if method has not specified this
-			if (!md.template().headers().containsKey(CONTENT_TYPE)) {
-				parseConsumes(md, method, classAnnotation);
-			}
-
-			// headers -- class annotation is inherited to methods, always write these if
-			// present
-			parseHeaders(md, method, classAnnotation);
-		}
-		return md;
-	}
-
+	/**
+	 * 2. BaseContract.parseAndValidateMetadata() 会后调用这个方法
+	 * @param data
+	 * @param methodAnnotation
+	 * @param method
+	 */
 	@Override
 	protected void processAnnotationOnMethod(MethodMetadata data,
-			Annotation methodAnnotation, Method method) {
+											 Annotation methodAnnotation, Method method) {
 		if (!RequestMapping.class.isInstance(methodAnnotation) && !methodAnnotation
-				.annotationType().isAnnotationPresent(RequestMapping.class)) {
+			.annotationType().isAnnotationPresent(RequestMapping.class)) {
 			return;
 		}
 
@@ -249,6 +238,32 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		data.indexToExpander(new LinkedHashMap<Integer, Param.Expander>());
 	}
+	@Override
+	public MethodMetadata parseAndValidateMetadata(Class<?> targetType, Method method) {
+		this.processedMethods.put(Feign.configKey(targetType, method), method);
+		MethodMetadata md = super.parseAndValidateMetadata(targetType, method);
+
+		RequestMapping classAnnotation = findMergedAnnotation(targetType,
+				RequestMapping.class);
+		if (classAnnotation != null) {
+			// produces - use from class annotation only if method has not specified this
+			if (!md.template().headers().containsKey(ACCEPT)) {
+				parseProduces(md, method, classAnnotation);
+			}
+
+			// consumes -- use from class annotation only if method has not specified this
+			if (!md.template().headers().containsKey(CONTENT_TYPE)) {
+				parseConsumes(md, method, classAnnotation);
+			}
+
+			// headers -- class annotation is inherited to methods, always write these if
+			// present
+			parseHeaders(md, method, classAnnotation);
+		}
+		return md;
+	}
+
+
 
 	private String resolve(String value) {
 		if (StringUtils.hasText(value)

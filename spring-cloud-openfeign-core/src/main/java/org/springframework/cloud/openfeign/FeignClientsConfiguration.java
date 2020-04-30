@@ -60,6 +60,9 @@ public class FeignClientsConfiguration {
 	@Autowired
 	private ObjectFactory<HttpMessageConverters> messageConverters;
 
+	/**
+	 * 参数处理器
+	 */
 	@Autowired(required = false)
 	private List<AnnotatedParameterProcessor> parameterProcessors = new ArrayList<>();
 
@@ -97,6 +100,13 @@ public class FeignClientsConfiguration {
 		return new PageableSpringEncoder(new SpringEncoder(this.messageConverters));
 	}
 
+	/**
+	 * 如果没有{@link Contract Contract}类型的bean,
+	 * 则会默认注册一个{@link SpringMvcContract SpringMvcContract}
+	 * 类型的Bean
+	 * @param feignConversionService
+	 * @return
+	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public Contract feignContract(ConversionService feignConversionService) {
@@ -125,6 +135,11 @@ public class FeignClientsConfiguration {
 		return Feign.builder().retryer(retryer);
 	}
 
+	/**
+	 * 如果缺少{@link FeignLoggerFactory FeignLoggerFactory}类型的Bean,
+	 * 则自己注入一个
+	 * @return
+	 */
 	@Bean
 	@ConditionalOnMissingBean(FeignLoggerFactory.class)
 	public FeignLoggerFactory feignLoggerFactory() {

@@ -31,6 +31,7 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 
+import org.apache.http.client.HttpClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
@@ -40,6 +41,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -156,10 +158,23 @@ class FeignClientFactoryBean
 		Feign.Builder builder = get(context, Feign.Builder.class)
 			// required values
 			.logger(logger)
-			// 设置编码器
+			/**
+			 * 设置编码器,在{@link FeignClientsConfiguration#feignEncoder()}或者
+			 * {@link FeignClientsConfiguration#feignEncoderPageable()}两个
+			 * 函数中注入.
+			 */
 			.encoder(get(context, Encoder.class))
-			// 设置解码器
+			/**
+			 * 设置解码器,在{@link FeignClientsConfiguration#feignDecoder()}
+			 * 函数中注入.
+			 */
 			.decoder(get(context, Decoder.class))
+			/**
+			 * 这个就看不懂了,到底是设置什么呢?
+			 * 契约?合同?还是??...
+			 * 在{@link FeignClientsConfiguration#feignContract(ConversionService)} ()}
+			 * 中注入
+			 */
 			.contract(get(context, Contract.class));
 		// @formatter:on
 
@@ -197,6 +212,11 @@ class FeignClientFactoryBean
 
 	protected void configureUsingConfiguration(FeignContext context,
 											   Feign.Builder builder) {
+		/**
+		 * 从{@linkplain context}中取出相对应的Bean,设置到{@link builder}中.
+		 * 说白了,就是填充{@code Feign.Builder},以便后续进行构建.
+		 */
+
 		Logger.Level level = getOptional(context, Logger.Level.class);
 		if (level != null) {
 			builder.logLevel(level);
@@ -309,9 +329,21 @@ class FeignClientFactoryBean
 	 */
 	protected <T> T loadBalance(Feign.Builder builder, FeignContext context,
 								HardCodedTarget<T> target) {
+		/**
+		 * 从BeanFactory中,拿出{@link Client},
+		 * 注意,这里的{@link Client}是在
+		 * {@link FeignAutoConfiguration.HttpClientFeignConfiguration#feignClient(HttpClient)}
+		 * 中注入的.
+		 */
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
 			builder.client(client);
+			/**
+			 * 从BeanFactory中,拿出{@link Targeter}
+			 * 注意,这里的{@code Target}是在{@link FeignAutoConfiguration.HystrixFeignTargeterConfiguration#feignTargeter()}
+			 * 或者{@link FeignAutoConfiguration.DefaultFeignTargeterConfiguration#feignTargeter()}
+			 * 中注入的.
+			 */
 			Targeter targeter = get(context, Targeter.class);
 			return targeter.target(this, builder, context, target);
 		}
@@ -329,21 +361,27 @@ class FeignClientFactoryBean
 	 */
 	<T> T getTarget() {
 
-		//
+		/**
+		 * 从容器中获取{@code FeignContext}
+		 * 这个在{@link FeignAutoConfiguration#feignContext()} 中注入.
+		 */
 		FeignContext context = this.applicationContext.getBean(FeignContext.class);
 
 		Feign.Builder builder = feign(context);
 
+		// 如没有指定url
 		if (!StringUtils.hasText(this.url)) {
+			// 解析路径,分配负载均衡客户端
 			if (!this.name.startsWith("http")) {
 				this.url = "http://" + this.name;
 			} else {
 				this.url = this.name;
 			}
 			this.url += cleanPath();
-			return (T) loadBalance(builder, context,
-				new HardCodedTarget<>(this.type, this.name, this.url));
+
+			return (T) loadBalance(builder, context,new HardCodedTarget<>(this.type, this.name, this.url));
 		}
+		// 指定了url,并且url不是以http开头
 		if (StringUtils.hasText(this.url) && !this.url.startsWith("http")) {
 			this.url = "http://" + this.url;
 		}
@@ -359,8 +397,7 @@ class FeignClientFactoryBean
 		}
 		Targeter targeter = get(context, Targeter.class);
 
-		return (T) targeter.target(this, builder, context,
-			new HardCodedTarget<>(this.type, this.name, url));
+		return (T) targeter.target(this, builder, context,new HardCodedTarget<>(this.type, this.name, url));
 	}
 
 	private String cleanPath() {

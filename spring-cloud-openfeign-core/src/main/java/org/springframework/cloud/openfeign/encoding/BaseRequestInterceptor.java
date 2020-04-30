@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
 
 /**
  * The base request interceptor.
+ * 基础请求拦截器
  *
  * @author Jakub Narloch
  */

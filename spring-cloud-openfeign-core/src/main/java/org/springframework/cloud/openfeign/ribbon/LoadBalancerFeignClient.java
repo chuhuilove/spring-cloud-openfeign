@@ -31,8 +31,7 @@ import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 
 /**
  * @author Dave Syer
- * 做负载均衡
- *
+ * 实现了{@linkplain Client},代表着这个类是实际执行http请求并返回响应的类.
  */
 public class LoadBalancerFeignClient implements Client {
 

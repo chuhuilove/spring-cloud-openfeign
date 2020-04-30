@@ -43,6 +43,9 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Spencer Gibb
+ * http负载均衡客户端配置类
+ * 此配置类运行的前提条件是:在类路径上存在{@link ApacheHttpClient}类.
+ *
  */
 @Configuration
 @ConditionalOnClass(ApacheHttpClient.class)

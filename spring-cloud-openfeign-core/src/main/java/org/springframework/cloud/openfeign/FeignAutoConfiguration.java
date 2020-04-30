@@ -103,9 +103,7 @@ public class FeignAutoConfiguration {
 		 *
 		 * 以上,就是{@linkplain configurations}中值的由来.
 		 *
-		 *
-		 *
-		 *
+		 * 但是,现在为止,还是没有闹明白,注入{@code FeignContext}的作用.
 		 *
 		 *
 		 */
@@ -114,10 +112,16 @@ public class FeignAutoConfiguration {
 		return context;
 	}
 
+
 	@Configuration
 	@ConditionalOnClass(name = "feign.hystrix.HystrixFeign")
 	protected static class HystrixFeignTargeterConfiguration {
 
+		/**
+		 * 注入Target,如果在类路径中发现了{@link feign.hystrix.HystrixFeign},
+		 * 则判断是否注入{@link HystrixTargeter},如果用户没有注入自定义的{@link Targeter},
+		 * 则注入{@linkplain HystrixFeignTargeterConfiguration#feignTargeter()} 的返回值.
+		 */
 		@Bean
 		@ConditionalOnMissingBean
 		public Targeter feignTargeter() {
@@ -126,16 +130,24 @@ public class FeignAutoConfiguration {
 
 	}
 
+
 	@Configuration
 	@ConditionalOnMissingClass("feign.hystrix.HystrixFeign")
 	protected static class DefaultFeignTargeterConfiguration {
-
+		/**
+		 * 注入Target,如果在类路径中没有发现{@link feign.hystrix.HystrixFeign},
+		 * 则判断是否注入{@link DefaultTargeter},如果用户没有注入自定义的{@link Targeter},
+		 * 则注入{@linkplain DefaultFeignTargeterConfiguration#feignTargeter()} 的返回值.
+		 */
 		@Bean
 		@ConditionalOnMissingBean
 		public Targeter feignTargeter() {
 			return new DefaultTargeter();
 		}
 
+		/**
+		 * 不得不说,SpringBoot的精髓<b>自动注入</b>,就是依赖于如此多的{@code @Conditional*}
+		 */
 	}
 
 	// the following configuration is for alternate feign clients if

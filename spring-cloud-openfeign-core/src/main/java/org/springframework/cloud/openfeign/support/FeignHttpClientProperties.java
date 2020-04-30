@@ -57,7 +57,7 @@ public class FeignHttpClientProperties {
 	public static final boolean DEFAULT_FOLLOW_REDIRECTS = true;
 
 	/**
-	 * Default value for connection timeout.
+	 * 连接超时默认值.
 	 */
 	public static final int DEFAULT_CONNECTION_TIMEOUT = 2000;
 
@@ -78,6 +78,9 @@ public class FeignHttpClientProperties {
 
 	private boolean followRedirects = DEFAULT_FOLLOW_REDIRECTS;
 
+	/**
+	 * 默认连接超时时间,单位(ms)
+	 */
 	private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 
 	private int connectionTimerRepeat = DEFAULT_CONNECTION_TIMER_REPEAT;

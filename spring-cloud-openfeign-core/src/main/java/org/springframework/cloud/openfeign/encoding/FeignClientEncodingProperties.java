@@ -22,7 +22,7 @@ import java.util.Objects;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * The Feign encoding properties.
+ * Feign编码属性.
  *
  * @author Jakub Narloch
  */
