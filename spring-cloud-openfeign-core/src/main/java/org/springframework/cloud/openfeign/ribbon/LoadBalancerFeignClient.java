@@ -51,20 +51,30 @@ public class LoadBalancerFeignClient implements Client {
 		this.clientFactory = clientFactory;
 	}
 
+	/**
+	 *
+	 * @param originalUrl 原始url https://chuhui.server.com/example/req
+	 * @param host 主机名  chuhui.server.com
+	 * @return
+	 */
 	static URI cleanUrl(String originalUrl, String host) {
 		String newUrl = originalUrl;
 		if (originalUrl.startsWith("https://")) {
 			newUrl = originalUrl.substring(0, 8)
 					+ originalUrl.substring(8 + host.length());
+			// newurl: https://chuhui.server.com
 		}
 		else if (originalUrl.startsWith("http")) {
 			newUrl = originalUrl.substring(0, 7)
 					+ originalUrl.substring(7 + host.length());
+			// newurl: http://chuhui.server.com
 		}
 		StringBuffer buffer = new StringBuffer(newUrl);
+
 		if ((newUrl.startsWith("https://") && newUrl.length() == 8)
 				|| (newUrl.startsWith("http://") && newUrl.length() == 7)) {
 			buffer.append("/");
+			// buffer:http://chuhui.server.com/ 或者 https://chuhui.server.com/
 		}
 		return URI.create(buffer.toString());
 	}
@@ -72,13 +82,18 @@ public class LoadBalancerFeignClient implements Client {
 	@Override
 	public Response execute(Request request, Request.Options options) throws IOException {
 		try {
+			// 获取完整的url
 			URI asUri = URI.create(request.url());
+			// 从url中获取主机名
 			String clientName = asUri.getHost();
+			// 从url中获取主机名,然后进一步封装
 			URI uriWithoutHost = cleanUrl(request.url(), clientName);
+
 			FeignLoadBalancer.RibbonRequest ribbonRequest = new FeignLoadBalancer.RibbonRequest(
 					this.delegate, request, uriWithoutHost);
 
 			IClientConfig requestConfig = getClientConfig(options, clientName);
+
 			return lbClient(clientName)
 					.executeWithLoadBalancer(ribbonRequest, requestConfig).toResponse();
 		}
@@ -91,6 +106,12 @@ public class LoadBalancerFeignClient implements Client {
 		}
 	}
 
+	/**
+	 * 获取客户端配置
+	 * @param options 设置了连接超时,读取超时..
+	 * @param clientName 客户端名称
+	 * @return
+	 */
 	IClientConfig getClientConfig(Request.Options options, String clientName) {
 		IClientConfig requestConfig;
 		if (options == DEFAULT_OPTIONS) {

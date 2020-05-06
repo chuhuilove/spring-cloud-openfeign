@@ -26,7 +26,8 @@ import feign.QueryMap;
 import org.springframework.core.annotation.AliasFor;
 
 /**
- * Spring MVC equivalent of OpenFeign's {@link feign.QueryMap} parameter annotation.
+ * 与OpenFeign的{@link feign.QueryMap}参数注解等效的Spring MVC.
+ *
  *
  * @author Aram Peres
  * @see feign.QueryMap

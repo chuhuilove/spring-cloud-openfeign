@@ -137,7 +137,8 @@
 		<module>spring-cloud-openfeign-core</module>
 		<module>spring-cloud-starter-openfeign</module>
 		<module>docs</module>
-        <module>chuhui-cloud-feign</module>
+<!--		打包的时候,不能加上这个模块,不然,会出莫名其妙的问题-->
+<!--        <module>chuhui-cloud-feign</module>-->
     </modules>
 	<profiles>
 		<profile>

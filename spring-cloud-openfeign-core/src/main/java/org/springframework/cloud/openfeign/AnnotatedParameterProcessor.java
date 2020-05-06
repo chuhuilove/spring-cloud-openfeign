@@ -24,6 +24,7 @@ import feign.MethodMetadata;
 
 /**
  * Feign contract method parameter processor.
+ * 方法参数处理器
  *
  * @author Jakub Narloch
  * @author Abhijit Sarkar

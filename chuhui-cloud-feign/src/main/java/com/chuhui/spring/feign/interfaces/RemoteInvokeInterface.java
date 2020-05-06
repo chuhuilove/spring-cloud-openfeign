@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @DATE: 2020/4/9
  * @DESCRIPTION: todo
  */
-@FeignClient("server.chuhui.com")
+@FeignClient("${services.remoteServer}")
 public interface RemoteInvokeInterface {
 
-	@GetMapping("/chuhui/feign/remoteService")
+	@GetMapping("/feign-server/example/uuid")
 	 String remoteService();
 }

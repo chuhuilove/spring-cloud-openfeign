@@ -25,7 +25,8 @@ import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 
 /**
- * {@link SpringQueryMap} parameter processor.
+ * {@link SpringQueryMap} 参数处理器.
+ * {@link SpringQueryMap}是Spring-cloud-openfeign自定义的注解
  *
  * @author Aram Peres
  * @see AnnotatedParameterProcessor

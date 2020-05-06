@@ -30,7 +30,7 @@ import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
 
 /**
- * {@link PathVariable} parameter processor.
+ * {@link PathVariable} 参数处理器.
  *
  * @author Jakub Narloch
  * @author Abhijit Sarkar
